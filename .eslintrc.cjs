@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     es2023: true,
@@ -11,6 +12,11 @@ module.exports = {
   plugins: ["prettier"],
   rules: {
     "no-undef": "off",
-    "prettier/prettier": "error",
+    "prettier/prettier": [
+      "error",
+      {
+        endOfLine: "auto",
+      },
+    ],
   },
 };
