@@ -136,7 +136,6 @@ async function fetchRoadData() {
       City: item.City,
       Geometry: item.Geometry,
     }));
-    console.log(`已選擇${selectCity.value},自行車道資料:`, roadData.value);
 
     saveToLocalStorage(selectCity.value, roadData.value);
   } catch (error) {
@@ -148,18 +147,11 @@ async function fetchRoadData() {
 function saveToLocalStorage(city: string, data: RoadDataItem[]) {
   const storageKey = `roadData_${city}`;
   localStorage.setItem(storageKey, JSON.stringify(data));
-  console.log(`儲存${city} 的資料到 local storage`);
 }
 
 function loadFromLocalStorage(city: string) {
   const storageKey = `roadData_${city}`;
   const storageData = localStorage.getItem(storageKey);
-  if (storageData) {
-    roadData.value = JSON.parse(storageData);
-    console.log(`從 local storage 載入 ${city} 的資料`, roadData.value);
-  } else {
-    console.log(`local storage 中沒有 ${city} 的資料`);
-  }
 }
 
 function saveRouteData(name: string, geometry: string) {
