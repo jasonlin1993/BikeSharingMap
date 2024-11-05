@@ -1,54 +1,52 @@
 <template>
   <NuxtLayout>
-    <body class="bg-custom-gray">
-      <HeaderComponent>
-        <div>
-          <select
-            v-model="selectCity"
-            @change="fetchRoadData"
-            class="mx-4 h-11 w-40 cursor-pointer rounded-md bg-black px-4 py-2 font-google text-sm font-normal text-white lg:mx-24"
+    <HeaderComponent>
+      <div>
+        <select
+          v-model="selectCity"
+          @change="fetchRoadData"
+          class="mx-4 h-11 w-40 cursor-pointer rounded-md bg-black px-4 py-2 font-google text-sm font-normal text-white lg:mx-24"
+        >
+          <option disabled value="">選擇城市</option>
+          <option v-for="option in options" :key="option.value" :value="option.value">
+            {{ option.text }}
+          </option>
+        </select>
+      </div>
+    </HeaderComponent>
+    <div v-if="roadData.length">
+      <div class="mx-24 my-10 flex h-20 flex-wrap items-center justify-center">
+        <div v-for="item in roadData" :key="item.RouteName" class="card">
+          <div
+            class="m-1 flex h-[86px] w-[362px] gap-2 rounded-md bg-white p-3 shadow-custom-shadow"
           >
-            <option disabled value="">選擇城市</option>
-            <option v-for="option in options" :key="option.value" :value="option.value">
-              {{ option.text }}
-            </option>
-          </select>
-        </div>
-      </HeaderComponent>
-      <div v-if="roadData.length">
-        <div class="mx-24 my-10 flex h-20 flex-wrap items-center justify-center">
-          <div v-for="item in roadData" :key="item.RouteName" class="card">
-            <div
-              class="m-1 flex h-[86px] w-[362px] gap-2 rounded-md bg-white p-3 shadow-custom-shadow"
-            >
-              <div class="h-[79px] w-[362px]">
-                <div class="font-google text-base font-bold not-italic">{{ item.RouteName }}</div>
-                <div
-                  class="my-2 flex flex-row justify-between text-xs font-normal not-italic text-custom-gray-text"
-                >
-                  <div>{{ item.Direction }} {{ item.CyclingLength }} 公里</div>
-                  <div class="flex justify-between">
-                    <img src="~/assets/Vector.png" class="mx-2" />
-                    <NuxtLink to="roadMap" @click="saveRouteData(item.RouteName, item.Geometry)">
-                      <p class="cursor-pointer hover:text-custom-yellow">
-                        {{ item.City }}
-                      </p>
-                    </NuxtLink>
-                  </div>
+            <div class="h-[79px] w-[362px]">
+              <div class="font-google text-base font-bold not-italic">{{ item.RouteName }}</div>
+              <div
+                class="my-2 flex flex-row justify-between text-xs font-normal not-italic text-custom-gray-text"
+              >
+                <div>{{ item.Direction }} {{ item.CyclingLength }} 公里</div>
+                <div class="flex justify-between">
+                  <img src="~/assets/Vector.png" class="mx-2" />
+                  <NuxtLink to="roadMap" @click="saveRouteData(item.RouteName, item.Geometry)">
+                    <p class="cursor-pointer hover:text-custom-yellow">
+                      {{ item.City }}
+                    </p>
+                  </NuxtLink>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div
-        v-else
-        class="absolute left-[89px] top-[150px] font-google text-lg font-normal text-custom-gray-text"
-      >
-        尚未選擇任何縣市
-      </div>
-    </body>
+    <div
+      v-else
+      class="absolute left-[89px] top-[150px] font-google text-lg font-normal text-custom-gray-text"
+    >
+      尚未選擇任何縣市
+    </div>
   </NuxtLayout>
 </template>
 
