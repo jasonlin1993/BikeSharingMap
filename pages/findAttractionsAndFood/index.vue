@@ -10,9 +10,7 @@
             >
               <div class="h-[79px] w-[362px]">
                 <div class="flex flex-col items-end">
-                  <div class="text-sm font-normal text-custom-yellow">
-                    {{ '1.1km' }}
-                  </div>
+                  <div class="text-sm font-normal text-custom-yellow"></div>
                 </div>
                 <div class="flex flex-col">
                   <div class="font-google text-base font-bold not-italic">
