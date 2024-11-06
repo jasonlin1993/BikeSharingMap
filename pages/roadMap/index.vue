@@ -14,7 +14,7 @@ import EndIcon from '~/assets/EndGPS.png';
 
 const runtimeConfig = useRuntimeConfig();
 const routeName = ref('');
-let map;
+let map: google.maps.Map;
 
 function parseGeometry(geometry: string) {
   const coordinates: google.maps.LatLngLiteral[] = [];
@@ -30,7 +30,7 @@ function parseGeometry(geometry: string) {
   return coordinates;
 }
 
-async function initMap() {
+async function initMap(): Promise<void> {
   const { Map } = (await google.maps.importLibrary('maps')) as google.maps.MapsLibrary;
   const { AdvancedMarkerElement } = (await google.maps.importLibrary(
     'marker',
@@ -97,7 +97,6 @@ async function initMap() {
 
 onMounted(async () => {
   const storeName = localStorage.getItem('selectedRouteName');
-
   if (storeName) {
     routeName.value = storeName;
   }
@@ -108,6 +107,7 @@ onMounted(async () => {
   });
 
   try {
+    await loader.load();
     await initMap();
   } catch (e) {
     console.error('Error loading Google Maps API:', e);
