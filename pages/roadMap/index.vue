@@ -105,9 +105,8 @@ onMounted(async () => {
     apiKey: runtimeConfig.public.googleMapsApiKey,
     version: 'weekly',
   });
-
+  const { Autocomplete, PlacesService, Place } = await loader.importLibrary('places');
   try {
-    await loader.load();
     await initMap();
   } catch (e) {
     console.error('Error loading Google Maps API:', e);
