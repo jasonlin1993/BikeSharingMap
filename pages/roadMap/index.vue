@@ -11,6 +11,7 @@ import { ref, onMounted } from 'vue';
 import { Loader } from '@googlemaps/js-api-loader';
 import BeginIcon from '~/assets/BeginGPS.png';
 import EndIcon from '~/assets/EndGPS.png';
+
 const runtimeConfig = useRuntimeConfig();
 const routeName = ref('');
 let map;
@@ -29,10 +30,16 @@ function parseGeometry(geometry: string) {
   return coordinates;
 }
 
-function initMap() {
+async function initMap() {
+  const { Map } = (await google.maps.importLibrary('maps')) as google.maps.MapsLibrary;
+  const { AdvancedMarkerElement } = (await google.maps.importLibrary(
+    'marker',
+  )) as google.maps.MarkerLibrary;
+
   map = new google.maps.Map(document.getElementById('map') as HTMLElement, {
     center: { lat: 23.553118, lng: 121.0211025 },
     zoom: 7,
+    mapId: 'DEMO_MAP_ID',
   });
 
   const storedGeometry = localStorage.getItem('selectedRouteGeometry');
@@ -53,23 +60,31 @@ function initMap() {
       ],
     });
 
+    const startContent = document.createElement('div');
+    const startImg = document.createElement('img');
+    startImg.src = BeginIcon;
+    startImg.style.width = '36px';
+    startImg.style.height = '50px';
+    startContent.appendChild(startImg);
+
+    const endContent = document.createElement('div');
+    const endImg = document.createElement('img');
+    endImg.src = EndIcon;
+    endImg.style.width = '36px';
+    endImg.style.height = '50px';
+    endContent.appendChild(endImg);
+
     if (path.length > 0) {
-      new google.maps.Marker({
+      const startMarker = new AdvancedMarkerElement({
         position: path[0],
         map: map,
-        icon: {
-          url: BeginIcon,
-          scaledSize: new google.maps.Size(36, 50),
-        },
+        content: startContent,
       });
 
-      new google.maps.Marker({
+      const endMarker = new AdvancedMarkerElement({
         position: path[path.length - 1],
         map: map,
-        icon: {
-          url: EndIcon,
-          scaledSize: new google.maps.Size(36, 50),
-        },
+        content: endContent,
       });
     }
 
@@ -80,7 +95,7 @@ function initMap() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   const storeName = localStorage.getItem('selectedRouteName');
 
   if (storeName) {
@@ -92,13 +107,10 @@ onMounted(() => {
     version: 'weekly',
   });
 
-  loader
-    .load()
-    .then(() => {
-      initMap();
-    })
-    .catch((e) => {
-      console.error('Error loading Google Maps API:', e);
-    });
+  try {
+    await initMap();
+  } catch (e) {
+    console.error('Error loading Google Maps API:', e);
+  }
 });
 </script>

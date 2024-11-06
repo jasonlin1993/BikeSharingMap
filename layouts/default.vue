@@ -1,9 +1,7 @@
 <template>
-  <body class="bg-custom-gray">
-    <div class="box-border:border-box border-0 p-0">
-      <slot name="header" />
-      <slot />
-      <slot name="footer" />
-    </div>
-  </body>
+  <div class="box-border:border-box min-h-screen border-0 bg-custom-gray p-0">
+    <slot name="header" />
+    <slot />
+    <slot name="footer" />
+  </div>
 </template>
