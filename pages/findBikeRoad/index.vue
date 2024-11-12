@@ -52,8 +52,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-const runtimeConfig = useRuntimeConfig();
 
+const runtimeConfig = useRuntimeConfig();
 let authHeader: any = null;
 const selectCity = ref('');
 const roadData = ref<RoadDataItem[]>([]);
