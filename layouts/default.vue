@@ -1,7 +1,10 @@
 <template>
-  <div class="box-border:border-box min-h-screen border-0 bg-custom-gray p-0">
+  <div class="flex min-h-screen flex-col bg-custom-gray">
     <slot name="header" />
-    <slot />
+    <!-- 主內容區域 -->
+    <main class="flex-grow bg-custom-gray">
+      <slot />
+    </main>
     <slot name="footer" />
   </div>
 </template>

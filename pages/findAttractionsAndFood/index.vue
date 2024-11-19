@@ -1,32 +1,43 @@
 <template>
   <NuxtLayout>
-    <div class="min-h-screen bg-custom-gray">
-      <HeaderComponent />
-      <div>
-        <div class="mx-24 my-10 flex h-20 flex-wrap items-center justify-center">
-          <div class="card">
-            <div
-              class="m-1 flex h-[150px] w-[362px] gap-2 rounded-md bg-white p-3 shadow-custom-shadow"
-            >
-              <div class="flex w-full flex-row">
-                <div>
-                  <img class="h-32 rounded-md" src="/assets/attraction.png" />
-                </div>
-                <div class="relative flex w-full flex-col">
-                  <div class="absolute right-0 text-sm font-normal text-custom-yellow">
-                    {{ '1.1km' }}
-                  </div>
-                  <div class="mt-8 flex">
-                    <div class="mx-4 font-google text-base font-bold not-italic">
-                      {{ '國立故宮博物院' }}
+    <HeaderComponent>
+      <select
+        v-model="selectCity"
+        @change="fetchAttractionAndFood"
+        class="mx-4 h-11 w-40 cursor-pointer rounded-md bg-black px-4 py-2 font-google text-sm font-normal text-white lg:mx-24"
+      >
+        <option disabled value="">選擇城市</option>
+        <option v-for="option in options" :key="option.value" :value="option.value">
+          {{ option.text }}
+        </option>
+      </select>
+    </HeaderComponent>
 
-                      <div
-                        class="mt-8 flex-row justify-between text-xs font-normal not-italic text-custom-gray-text"
-                      >
-                        <div class="flex">
-                          <img src="~/assets/tel.png" />
-                          <p class="flex items-center justify-center">02-28812102</p>
-                        </div>
+    <!-- 背景區域確保可以延伸 -->
+    <div class="min-h-screen">
+      <div v-if="selectCity" class="mx-24 my-10 flex flex-wrap items-center justify-center">
+        <div v-for="item in attractionData" :key="item.ScenicSpotName" class="card">
+          <div
+            class="hover: m-1 flex h-[150px] w-[362px] -translate-y-2 transform gap-2 rounded-md bg-white p-3 shadow-custom-shadow transition duration-300 ease-in-out hover:-translate-x-2 hover:cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-custom-yellow"
+          >
+            <div class="flex w-full flex-row">
+              <div>
+                <img class="h-32 rounded-md" :src="item.Picture.PictureUrl1" alt="Image" />
+              </div>
+              <div class="relative flex w-full flex-col">
+                <div class="absolute right-0 text-sm font-normal text-custom-yellow">
+                  {{ item.Distance }}
+                </div>
+                <div class="mt-8 flex">
+                  <div class="mx-4 font-google text-base font-bold not-italic">
+                    {{ item.ScenicSpotName }}
+
+                    <div
+                      class="mt-8 flex-row justify-between text-xs font-normal not-italic text-custom-gray-text"
+                    >
+                      <div class="flex">
+                        <img src="~/assets/tel.png" />
+                        <p class="flex items-center justify-center">{{ item.Phone }}</p>
                       </div>
                     </div>
                   </div>
@@ -35,6 +46,13 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div
+        v-else
+        class="absolute left-[89px] top-[150px] font-google text-lg font-normal text-custom-gray-text"
+      >
+        尚未選擇任何縣市
       </div>
     </div>
   </NuxtLayout>
@@ -46,12 +64,31 @@ import { ref } from 'vue';
 let authHeader: any = null;
 const runtimeConfig = useRuntimeConfig();
 const selectCity = ref('');
+const attractionData = ref<AttractionDataItem[]>([]);
+const cache: Record<string, AttractionDataItem[]> = {};
+const userPosition = ref({ lat: 0, lon: 0 });
+
+interface AttractionDataItem {
+  ScenicSpotName: string;
+  DescriptionDetail: string;
+  Phone: string;
+  Picture: {
+    PictureUrl1: string;
+    PictureDescription1: string;
+  };
+
+  Position: {
+    PositionLon: number;
+    PositionLat: number;
+    GeoHash: string;
+  };
+  Distance?: string;
+}
 
 const options = ref([
   { text: '臺中市', value: 'Taichung' },
   { text: '基隆市', value: 'Keelung' },
   { text: '新竹縣', value: 'HsinchuCounty' },
-  { text: '苗栗縣', value: 'MiaoliCounty' },
   { text: '彰化縣', value: 'ChanghuaCounty' },
   { text: '新北市', value: 'NewTaipei' },
   { text: '南投縣', value: 'NantouCounty' },
@@ -65,11 +102,26 @@ const options = ref([
   { text: '金門縣', value: 'KinmenCounty' },
   { text: '花蓮縣', value: 'HualienCounty' },
   { text: '澎湖縣', value: 'PenghuCounty' },
-  { text: '臺北市', value: 'TAIPEI' },
+  { text: '臺北市', value: 'Taipei' },
   { text: '桃園市', value: 'Taoyuan' },
   { text: '高雄市', value: 'Kaohsiung' },
   { text: '台南市', value: 'Tainan' },
 ]);
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): string {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+  return distance.toFixed(1) + ' km';
+}
 
 async function getAuthorizationHeader() {
   if (authHeader !== null) {
@@ -94,4 +146,80 @@ async function getAuthorizationHeader() {
   authHeader = data;
   return data;
 }
+
+async function fetchAttractionAndFood() {
+  if (selectCity.value === '') return;
+
+  if (cache[selectCity.value]) {
+    attractionData.value = cache[selectCity.value];
+    return;
+  }
+  try {
+    const accessTokenData = await getAuthorizationHeader();
+    const accessToken = accessTokenData.access_token;
+    const data: AttractionDataItem[] = await $fetch(
+      `https://tdx.transportdata.tw/api/basic/v2/Tourism/ScenicSpot/${selectCity.value}?%24top=240&%24format=JSON`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    const uniqueNames = new Set();
+
+    const filteredData = data
+      .filter((item: AttractionDataItem) => {
+        if (item.Picture?.PictureUrl1 && !uniqueNames.has(item.ScenicSpotName)) {
+          uniqueNames.add(item.ScenicSpotName);
+          return true;
+        }
+        return false;
+      })
+      .map((item: AttractionDataItem) => {
+        const distance = calculateDistance(
+          userPosition.value.lat,
+          userPosition.value.lon,
+          item.Position.PositionLat,
+          item.Position.PositionLon,
+        );
+        return {
+          ScenicSpotName: item.ScenicSpotName,
+          DescriptionDetail: item.DescriptionDetail,
+          Phone: item.Phone.replace(/^886-/, '0'),
+          Picture: {
+            PictureUrl1: item.Picture.PictureUrl1,
+            PictureDescription1: item.Picture.PictureDescription1,
+          },
+          Position: {
+            PositionLon: item.Position.PositionLon,
+            PositionLat: item.Position.PositionLat,
+            GeoHash: item.Position.GeoHash,
+          },
+          Distance: distance,
+        };
+      });
+    cache[selectCity.value] = filteredData;
+    attractionData.value = filteredData;
+  } catch (error) {
+    console.error('Error fetching road data:', error);
+  }
+}
+
+function getUserPosition() {
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      userPosition.value.lat = position.coords.latitude;
+      userPosition.value.lon = position.coords.longitude;
+    },
+    (error) => {
+      console.error('Error getting user position:', error);
+    },
+  );
+}
+
+onMounted(() => {
+  getUserPosition();
+});
 </script>
