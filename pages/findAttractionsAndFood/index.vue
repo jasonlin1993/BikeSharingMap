@@ -1,10 +1,56 @@
 <template>
   <NuxtLayout>
     <HeaderComponent>
+      <div
+        class="relative hidden h-10 w-72 cursor-pointer rounded-full bg-white font-google text-base font-normal leading-5 md:hidden xl:flex"
+      >
+        <input type="checkbox" id="check" class="peer hidden" />
+
+        <!-- 黑色背景 -->
+        <div
+          class="absolute flex h-full w-1/2 items-center justify-center rounded-full bg-black transition-transform duration-500 peer-checked:translate-x-full"
+        ></div>
+
+        <!-- 景點（黃色文字 + 圖片） -->
+        <span
+          class="absolute bottom-1/4 left-[10%] top-1/4 flex items-center font-google text-lg font-black text-custom-yellow transition-opacity duration-300 peer-checked:opacity-0"
+        >
+          <img src="/assets/attractionYellow.png" />
+          <p class="mx-2">景</p>
+          <p class="mx-2">點</p>
+        </span>
+        <!-- 美食（黃色文字 + 圖片） -->
+        <span
+          class="absolute bottom-1/4 right-[10%] top-1/4 hidden items-center font-google text-lg font-black text-custom-yellow duration-300 peer-checked:flex"
+        >
+          <img src="/assets/foodYellow.png" />
+          <p class="mx-2">美</p>
+          <p class="mx-2">食</p>
+        </span>
+        <!-- 景點（黑色文字 + 圖片） -->
+        <span
+          class="absolute bottom-1/4 left-[10%] top-1/4 hidden items-center justify-center font-google text-lg font-black text-black peer-checked:flex"
+        >
+          <img src="/assets/attractionBlack.png" />
+          <p class="mx-2">景</p>
+          <p class="mx-2">點</p>
+        </span>
+        <!-- 美食（黑色文字 + 圖片） -->
+        <span
+          class="absolute bottom-1/4 right-[10%] top-1/4 flex items-center justify-center font-google text-lg font-black text-black peer-checked:opacity-0"
+        >
+          <img src="/assets/foodBlack.png" />
+          <p class="mx-2">美</p>
+          <p class="mx-2">食</p>
+        </span>
+        <label for="check" class="absolute h-full w-full cursor-pointer rounded-full"></label>
+      </div>
+      <div class="invisible hidden w-20"></div>
+
       <select
         v-model="selectCity"
         @change="fetchAttractionAndFood"
-        class="mx-4 h-11 w-40 cursor-pointer rounded-md bg-black px-4 py-2 font-google text-sm font-normal text-white lg:mx-24"
+        class="mx-4 hidden h-11 w-40 cursor-pointer rounded-md bg-black px-4 py-2 font-google text-sm font-normal text-white lg:mx-24 xl:flex"
       >
         <option disabled value="">選擇城市</option>
         <option v-for="option in options" :key="option.value" :value="option.value">
@@ -13,7 +59,6 @@
       </select>
     </HeaderComponent>
 
-    <!-- 背景區域確保可以延伸 -->
     <div class="min-h-screen">
       <div v-if="selectCity" class="mx-24 my-10 flex flex-wrap items-center justify-center">
         <div v-for="item in attractionData" :key="item.ScenicSpotName" class="card">
@@ -55,6 +100,18 @@
         尚未選擇任何縣市
       </div>
     </div>
+    <FooterComponent>
+      <div class="flex h-full w-2/4 items-center justify-center font-google text-lg font-black">
+        <p class="mx-2">景</p>
+        <p class="mx-2">點</p>
+      </div>
+      <div
+        class="flex h-full w-2/4 items-center justify-center font-google text-lg font-black text-gray-50"
+      >
+        <p class="mx-2">美</p>
+        <p class="mx-2">食</p>
+      </div>
+    </FooterComponent>
   </NuxtLayout>
 </template>
 
@@ -67,6 +124,11 @@ const selectCity = ref('');
 const attractionData = ref<AttractionDataItem[]>([]);
 const cache: Record<string, AttractionDataItem[]> = {};
 const userPosition = ref({ lat: 0, lon: 0 });
+const isSliding = ref(false);
+
+function toggleSlide() {
+  isSliding.value = !isSliding.value;
+}
 
 interface AttractionDataItem {
   ScenicSpotName: string;
