@@ -2,9 +2,15 @@
   <NuxtLayout>
     <HeaderComponent>
       <div
-        class="relative hidden h-10 w-72 cursor-pointer rounded-full bg-white font-google text-base font-normal leading-5 md:hidden xl:flex"
+        class="relative hidden h-10 w-72 cursor-pointer rounded-full bg-white font-google text-base font-normal leading-5 lg:hidden xl:flex"
       >
-        <input type="checkbox" id="check" class="peer hidden" />
+        <input
+          type="checkbox"
+          id="check"
+          class="peer hidden"
+          v-model="isChecked"
+          @change="toggleCategory"
+        />
 
         <!-- 黑色背景 -->
         <div
@@ -49,8 +55,7 @@
 
       <select
         v-model="selectCity"
-        @change="fetchAttractionAndFood"
-        class="mx-4 hidden h-11 w-40 cursor-pointer rounded-md bg-black px-4 py-2 font-google text-sm font-normal text-white lg:mx-24 xl:flex"
+        class="mx-4 h-11 w-40 cursor-pointer rounded-md bg-black px-4 py-2 font-google text-sm font-normal text-white lg:mx-24 xl:flex"
       >
         <option disabled value="">選擇城市</option>
         <option v-for="option in options" :key="option.value" :value="option.value">
@@ -61,35 +66,53 @@
 
     <div class="min-h-screen">
       <div v-if="selectCity" class="mx-24 my-10 flex flex-wrap items-center justify-center">
-        <div v-for="item in attractionData" :key="item.ScenicSpotName" class="card">
-          <div
-            class="hover: m-1 flex h-[150px] w-[362px] -translate-y-2 transform gap-2 rounded-md bg-white p-3 shadow-custom-shadow transition duration-300 ease-in-out hover:-translate-x-2 hover:cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-custom-yellow"
+        <div v-for="item in DataItem" :key="item.Name" class="card">
+          <NuxtLink
+            to="attractionAndFoodDescription"
+            @click="
+              saveAttractionDataToLocalStorage(
+                item.Name,
+                item.DescriptionDetail,
+                item.OpenTime,
+                item.Phone,
+                item.Picture.PictureUrl1 || '',
+                item.Position.PositionLon,
+                item.Position.PositionLat,
+                item.Position.GeoHash,
+                item.Distance || '',
+                item.Address || '',
+              )
+            "
           >
-            <div class="flex w-full flex-row">
-              <div>
-                <img class="h-32 rounded-md" :src="item.Picture.PictureUrl1" alt="Image" />
-              </div>
-              <div class="relative flex w-full flex-col">
-                <div class="absolute right-0 text-sm font-normal text-custom-yellow">
-                  {{ item.Distance }}
+            <div
+              class="hover: m-1 flex h-[150px] w-[362px] -translate-y-2 transform gap-2 rounded-md bg-white p-3 shadow-custom-shadow transition duration-300 hover:cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-custom-yellow"
+            >
+              <div class="flex w-full flex-row">
+                <div>
+                  <img class="h-32 rounded-md" :src="item.Picture.PictureUrl1" alt="Image" />
                 </div>
-                <div class="mt-8 flex">
-                  <div class="mx-4 font-google text-base font-bold not-italic">
-                    {{ item.ScenicSpotName }}
+                <div class="relative flex w-full flex-col">
+                  <div class="absolute right-0 text-sm font-normal text-custom-yellow">
+                    {{ item.Distance }}
+                  </div>
+                  <div class="mt-8 flex">
+                    <div class="mx-4 font-google text-base font-bold not-italic">
+                      {{ item.Name }}
 
-                    <div
-                      class="mt-8 flex-row justify-between text-xs font-normal not-italic text-custom-gray-text"
-                    >
-                      <div class="flex">
-                        <img src="~/assets/tel.png" />
-                        <p class="flex items-center justify-center">{{ item.Phone }}</p>
+                      <div
+                        class="mt-8 flex-row justify-between text-xs font-normal not-italic text-custom-gray-text"
+                      >
+                        <div class="flex items-center">
+                          <img src="~/assets/Call.png" class="mx-2" />
+                          <p class="flex items-center justify-center">{{ item.Phone }}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </NuxtLink>
         </div>
       </div>
 
@@ -101,13 +124,25 @@
       </div>
     </div>
     <FooterComponent>
-      <div class="flex h-full w-2/4 items-center justify-center font-google text-lg font-black">
+      <div
+        :class="[
+          'flex h-full w-2/4 items-center justify-center font-google text-lg font-black',
+          currentCategory === 'attraction' ? 'text-black' : 'text-white',
+        ]"
+        @click="toggleImage('attraction')"
+      >
+        <img :src="currentCategory === 'attraction' ? attractionBlackImg : attractionWhiteImg" />
         <p class="mx-2">景</p>
         <p class="mx-2">點</p>
       </div>
       <div
-        class="flex h-full w-2/4 items-center justify-center font-google text-lg font-black text-gray-50"
+        :class="[
+          'flex h-full w-2/4 items-center justify-center font-google text-lg font-black',
+          currentCategory === 'food' ? 'text-black' : 'text-white',
+        ]"
+        @click="toggleImage('food')"
       >
+        <img :src="currentCategory === 'food' ? foodBlackImg : foodWhiteImg" />
         <p class="mx-2">美</p>
         <p class="mx-2">食</p>
       </div>
@@ -116,27 +151,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+
+import attractionBlackImg from '@/assets/attractionBlack.png';
+import attractionWhiteImg from '@/assets/attractionWhite.png';
+import foodWhiteImg from '@/assets/foodWhite.png';
+import foodBlackImg from '@/assets/foodBlack.png';
 
 let authHeader: any = null;
 const runtimeConfig = useRuntimeConfig();
 const selectCity = ref('');
-const attractionData = ref<AttractionDataItem[]>([]);
-const cache: Record<string, AttractionDataItem[]> = {};
+const DataItem = ref<ApiDataItem[]>([]);
+const cache: Record<string, ApiDataItem[]> = {};
 const userPosition = ref({ lat: 0, lon: 0 });
-const isSliding = ref(false);
+const currentCategory = ref('attraction');
+const isChecked = ref(false);
 
-function toggleSlide() {
-  isSliding.value = !isSliding.value;
-}
-
-interface AttractionDataItem {
-  ScenicSpotName: string;
+interface ApiDataItem {
+  Name: string;
   DescriptionDetail: string;
+  Description: string;
   Phone: string;
+  OpenTime: string;
+  Address: string;
   Picture: {
-    PictureUrl1: string;
-    PictureDescription1: string;
+    PictureUrl1?: string;
+    PictureDescription1?: string;
+    PictureUrl?: string;
+    PictureDescription?: string;
   };
 
   Position: {
@@ -147,27 +189,24 @@ interface AttractionDataItem {
   Distance?: string;
 }
 
+function toggleCategory() {
+  currentCategory.value = isChecked.value ? 'food' : 'attraction';
+}
+
+function toggleImage(category: string) {
+  currentCategory.value = category;
+}
+
+watch([currentCategory, selectCity], ([newCategory, newCity], [oldCategory, oldCity]) => {
+  if (newCategory !== oldCategory || newCity !== oldCity) {
+    fetchAttractionAndFood();
+  }
+});
+
 const options = ref([
   { text: '臺中市', value: 'Taichung' },
-  { text: '基隆市', value: 'Keelung' },
-  { text: '新竹縣', value: 'HsinchuCounty' },
   { text: '彰化縣', value: 'ChanghuaCounty' },
-  { text: '新北市', value: 'NewTaipei' },
-  { text: '南投縣', value: 'NantouCounty' },
   { text: '雲林縣', value: 'YunlinCounty' },
-  { text: '嘉義縣', value: 'ChiayiCounty' },
-  { text: '嘉義市', value: 'Chiayi' },
-  { text: '屏東縣', value: 'PingtungCounty' },
-  { text: '宜蘭縣', value: 'YilanCounty' },
-  { text: '台東縣', value: 'TaitungCounty' },
-  { text: '花蓮縣', value: 'HualienCounty' },
-  { text: '金門縣', value: 'KinmenCounty' },
-  { text: '花蓮縣', value: 'HualienCounty' },
-  { text: '澎湖縣', value: 'PenghuCounty' },
-  { text: '臺北市', value: 'Taipei' },
-  { text: '桃園市', value: 'Taoyuan' },
-  { text: '高雄市', value: 'Kaohsiung' },
-  { text: '台南市', value: 'Tainan' },
 ]);
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): string {
@@ -212,58 +251,69 @@ async function getAuthorizationHeader() {
 async function fetchAttractionAndFood() {
   if (selectCity.value === '') return;
 
-  if (cache[selectCity.value]) {
-    attractionData.value = cache[selectCity.value];
+  const cacheKey = `${selectCity.value}-${currentCategory.value}`;
+  if (cache[cacheKey]) {
+    DataItem.value = cache[cacheKey];
     return;
   }
   try {
     const accessTokenData = await getAuthorizationHeader();
     const accessToken = accessTokenData.access_token;
-    const data: AttractionDataItem[] = await $fetch(
-      `https://tdx.transportdata.tw/api/basic/v2/Tourism/ScenicSpot/${selectCity.value}?%24top=240&%24format=JSON`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+
+    const endpoint =
+      currentCategory.value === 'attraction'
+        ? `https://tdx.transportdata.tw/api/basic/v2/Tourism/ScenicSpot/${selectCity.value}?%24top=20&%24format=JSON`
+        : `https://tdx.transportdata.tw/api/basic/v2/Tourism/Restaurant/${selectCity.value}?%24top=20&%24format=JSON`;
+    const rawData: ApiDataItem[] = await $fetch<ApiDataItem[]>(endpoint, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+    });
 
-    const uniqueNames = new Set();
-
-    const filteredData = data
-      .filter((item: AttractionDataItem) => {
-        if (item.Picture?.PictureUrl1 && !uniqueNames.has(item.ScenicSpotName)) {
-          uniqueNames.add(item.ScenicSpotName);
-          return true;
-        }
-        return false;
+    const filteredData = rawData
+      .filter((item: any) => {
+        const name =
+          currentCategory.value === 'attraction' ? item.ScenicSpotName : item.RestaurantName;
+        return item.Picture?.PictureUrl1 && name;
       })
-      .map((item: AttractionDataItem) => {
+      .map((item: any) => {
+        const name =
+          currentCategory.value === 'attraction' ? item.ScenicSpotName : item.RestaurantName;
+        const description =
+          currentCategory.value === 'attraction' ? item.DescriptionDetail : item.Description;
+
         const distance = calculateDistance(
           userPosition.value.lat,
           userPosition.value.lon,
           item.Position.PositionLat,
           item.Position.PositionLon,
         );
+
+        const phone = (item.Phone || '').replace(/^886-/, '0');
+        const openTime = item.OpenTime || '';
+        const address = item.Address || '';
+
         return {
-          ScenicSpotName: item.ScenicSpotName,
-          DescriptionDetail: item.DescriptionDetail,
-          Phone: item.Phone.replace(/^886-/, '0'),
+          Name: name,
+          DescriptionDetail: description || '',
+          Phone: phone,
+          OpenTime: openTime,
+          Address: address,
           Picture: {
-            PictureUrl1: item.Picture.PictureUrl1,
-            PictureDescription1: item.Picture.PictureDescription1,
+            PictureUrl1: item.Picture.PictureUrl1 || '',
+            PictureDescription1: item.Picture.PictureDescription1 || '',
           },
           Position: {
-            PositionLon: item.Position.PositionLon,
-            PositionLat: item.Position.PositionLat,
-            GeoHash: item.Position.GeoHash,
+            PositionLon: item.Position.PositionLon || 0,
+            PositionLat: item.Position.PositionLat || 0,
+            GeoHash: item.Position.GeoHash || '',
           },
           Distance: distance,
-        };
+        } as ApiDataItem;
       });
-    cache[selectCity.value] = filteredData;
-    attractionData.value = filteredData;
+    cache[cacheKey] = filteredData as ApiDataItem[];
+    DataItem.value = filteredData as ApiDataItem[];
   } catch (error) {
     console.error('Error fetching road data:', error);
   }
@@ -279,6 +329,30 @@ function getUserPosition() {
       console.error('Error getting user position:', error);
     },
   );
+}
+
+function saveAttractionDataToLocalStorage(
+  Name: string,
+  Description: string,
+  OpenTime: string,
+  Phone: string,
+  PictureUrl: string,
+  PositionLon: number,
+  PositionLat: number,
+  GeoHash: string,
+  Distance: string,
+  Address: string,
+) {
+  localStorage.setItem('selectedName', Name);
+  localStorage.setItem('selectedDescription', Description);
+  localStorage.setItem('selectedOpenTime', OpenTime);
+  localStorage.setItem('selectedPhone', Phone);
+  localStorage.setItem('selectedPictureUrl', PictureUrl);
+  localStorage.setItem('selectedPositionLon', PositionLon.toString());
+  localStorage.setItem('selectedPositionLat', PositionLat.toString());
+  localStorage.setItem('selectedGeoHash', GeoHash);
+  localStorage.setItem('selectedDistance', Distance);
+  localStorage.setItem('selectedAddress', Address);
 }
 
 onMounted(() => {

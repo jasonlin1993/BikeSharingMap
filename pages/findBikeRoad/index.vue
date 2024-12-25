@@ -120,7 +120,7 @@ async function fetchRoadData() {
     const accessTokenData = await getAuthorizationHeader();
     const accessToken = accessTokenData.access_token;
     const data: RoadDataItem[] = await $fetch(
-      `https://tdx.transportdata.tw/api/basic/v2/Cycling/Shape/City/${selectCity.value}?%24top=30&%24format=JSON`,
+      `https://tdx.transportdata.tw/api/basic/v2/Cycling/Shape/City/${selectCity.value}?%24top=21&%24format=JSON`,
       {
         method: 'GET',
         headers: {
