@@ -52,8 +52,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-const runtimeConfig = useRuntimeConfig();
 
+const runtimeConfig = useRuntimeConfig();
 let authHeader: any = null;
 const selectCity = ref('');
 const roadData = ref<RoadDataItem[]>([]);
@@ -120,7 +120,7 @@ async function fetchRoadData() {
     const accessTokenData = await getAuthorizationHeader();
     const accessToken = accessTokenData.access_token;
     const data: RoadDataItem[] = await $fetch(
-      `https://tdx.transportdata.tw/api/basic/v2/Cycling/Shape/City/${selectCity.value}?%24top=60&%24format=JSON`,
+      `https://tdx.transportdata.tw/api/basic/v2/Cycling/Shape/City/${selectCity.value}?%24top=21&%24format=JSON`,
       {
         method: 'GET',
         headers: {
