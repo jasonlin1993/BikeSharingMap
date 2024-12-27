@@ -1,7 +1,7 @@
 <template>
   <header class="w-full">
     <div
-      class="flex h-20 w-full flex-row items-center justify-center bg-custom-yellow shadow-custom-shadow sm:justify-between"
+      class="flex h-20 w-full flex-row items-center justify-around bg-custom-yellow shadow-custom-shadow sm:justify-between"
     >
       <NuxtLink to="/">
         <img
@@ -17,5 +17,7 @@
       </NuxtLink>
       <slot />
     </div>
+
+    <div class="hidden w-[100px] lg:block"></div>
   </header>
 </template>
