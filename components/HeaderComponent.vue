@@ -17,7 +17,5 @@
       </NuxtLink>
       <slot />
     </div>
-
-    <div class="hidden w-[100px] lg:block"></div>
   </header>
 </template>
