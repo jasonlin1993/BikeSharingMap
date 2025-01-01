@@ -7,3 +7,38 @@
 >   - KT (https://www.behance.net/KT_Designer)
 > - F2E
 >   - Jason Lin
+# meta-bus
+
+
+## 作品說明
+
+### Where's YouBike ? - 自行車道地圖資訊整合
+
+#### 設計概念
+
+這是一個搜尋台灣自行車的網頁，開啟定位，即可搜尋附近的自行車站點與自行車道，輕鬆安排自行車之旅。除此之外，還具備搜尋附近景點和台灣美食的功能。
+
+## 資料夾說明
+
+
+## 使用技術
+
+- Vue
+- TypeScript
+- Tailwind Css
+- Nuxt.js
+- ESLint：js、ts語法檢查
+- Prettier
+- Vercel：網站透過 Vercel 進行部署
+
+## 第三方服務
+
+- TDX API
+- Google Map API
+
+## UI / UX
+
+- KT
+
+## F2E
+- Jason Lin
