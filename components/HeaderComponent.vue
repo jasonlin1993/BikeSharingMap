@@ -1,7 +1,7 @@
 <template>
   <header class="w-full">
     <div
-      class="flex h-20 w-full flex-row items-center justify-between bg-custom-yellow shadow-custom-shadow"
+      class="flex h-20 w-full flex-row items-center justify-around bg-custom-yellow shadow-custom-shadow sm:justify-between"
     >
       <NuxtLink to="/">
         <img

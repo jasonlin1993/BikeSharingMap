@@ -2,6 +2,7 @@
   <NuxtLayout>
     <HeaderComponent>
       <p class="mx-4 px-6 py-2 font-google text-base font-normal">{{ selectedName }}</p>
+      <div class="mx-4 h-11 w-11 sm:hidden"></div>
     </HeaderComponent>
     <div class="bg-custom-gray">
       <div id="map" style="width: 100%; height: 100vh"></div>

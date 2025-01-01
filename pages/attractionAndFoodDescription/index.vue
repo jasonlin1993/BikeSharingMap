@@ -1,14 +1,17 @@
 <template>
   <HeaderComponent>
-    <p class="mx-4 px-6 py-2 font-google text-base font-normal">{{ selectedName }}</p>
+    <p class="mx-4 px-6 py-2 font-google text-base font-normal">
+      {{ selectedName }}
+    </p>
+    <div class="mx-4 h-11 w-11 sm:hidden"></div>
   </HeaderComponent>
 
   <div class="flex min-h-screen justify-center font-google">
-    <div class="flex flex-col text-sm">
+    <div class="flex w-[314px] flex-col text-sm sm:w-[544px]">
       <div
-        class="mt-8 flex h-[370px] w-[544px] items-center justify-center rounded-md bg-white shadow-[0_3px_4px_rgba(0,0,0,0.1)]"
+        class="mt-8 flex h-[217px] items-center justify-center rounded-md bg-white shadow-[0_3px_4px_rgba(0,0,0,0.1)] sm:h-[370px]"
       >
-        <div class="flex h-[330px] w-[500px] items-center justify-center">
+        <div class="flex h-[180px] w-[270px] items-center justify-center sm:h-[330px] sm:w-[500px]">
           <img class="rounded-md" :src="selectedImage" />
         </div>
       </div>
@@ -31,7 +34,7 @@
           </div>
         </NuxtLink>
       </div>
-      <div class="mt-4 flex w-[544px] text-[#7A7A7A]">
+      <div class="mt-4 flex text-[#7A7A7A]">
         {{ selectedDescription }}
       </div>
     </div>
