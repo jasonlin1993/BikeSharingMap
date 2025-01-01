@@ -21,7 +21,7 @@
 
 ## 使用技術
 
-- Vue
+- Vue.js
 - Typescript
 - Tailwind Css
 - Nuxt.js
