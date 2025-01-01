@@ -106,7 +106,6 @@ import zeroGrayIcon from '@/assets/zeroBikeGray.svg';
 let map: google.maps.Map, infoWindow: google.maps.InfoWindow;
 let data: bikeStation[] = []; //全域共享的站點資料
 let filterData: bikeAvailability[] = []; //全域共享的篩選資料
-let initialized = false; // 確保地圖只初始化一次
 let markers: CustomMarker[] = [];
 
 const selectedName = ref('Default Name');
@@ -186,29 +185,6 @@ interface bikeAvailability {
   };
 }
 
-// 切換租還車
-function toggleCategory() {
-  currentCategory.value = isChecked.value ? 'return' : 'rent';
-  addMarkersToMap(); // 切換模式後重新渲染地圖標記
-}
-
-function toggleImage(category: string) {
-  currentCategory.value = category;
-  addMarkersToMap();
-}
-
-function goToCurrentLocation() {
-  navigator.geolocation.getCurrentPosition((position: GeolocationPosition) => {
-    map.setCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
-  });
-}
-
-// 清除所有地圖標記
-function clearMarkers() {
-  markers.forEach((marker) => marker.setMap(null));
-  markers = [];
-}
-
 class CustomMarker extends google.maps.OverlayView {
   position: google.maps.LatLng;
   map: google.maps.Map;
@@ -232,7 +208,7 @@ class CustomMarker extends google.maps.OverlayView {
     const position = projection.fromLatLngToDivPixel(this.position);
 
     if (position) {
-      this.container.style.left = `${position.x - this.container.offsetWidth}px`;
+      this.container.style.left = `${position.x - this.container.offsetWidth / 2}px`;
       this.container.style.top = `${position.y - this.container.offsetHeight}px`;
     }
   }
@@ -244,60 +220,11 @@ class CustomMarker extends google.maps.OverlayView {
   }
 }
 
-// 在地圖上添加標記
-function addMarkersToMap() {
-  clearMarkers();
-
-  filterData.forEach((item) => {
-    const position = new google.maps.LatLng(
-      item.StationPosition?.PositionLat || 0,
-      item.StationPosition?.PositionLon || 0,
-    );
-
-    const isRentMode = currentCategory.value === 'rent';
-    const availableCount = isRentMode ? item.AvailableRentBikes : item.AvailableReturnBikes;
-
-    // 建立容器並添加圖標與文字
-    const container = document.createElement('div');
-    container.style.position = 'absolute';
-    container.style.width = '36px';
-    container.style.height = '50px';
-
-    const iconImg = document.createElement('img');
-    iconImg.src =
-      availableCount > 0 ? (isRentMode ? rentYellowIcon : returnBlackIcon) : zeroGrayIcon;
-    iconImg.style.width = '36px';
-    iconImg.style.height = '50px';
-
-    const countText = document.createElement('div');
-    countText.textContent = availableCount.toString();
-    countText.style.position = 'absolute';
-    countText.style.top = '40%';
-    countText.style.left = '50%';
-    countText.style.transform = 'translate(-50%, -50%)';
-    countText.style.color = availableCount > 0 ? (isRentMode ? 'black' : 'yellow') : 'gray';
-    countText.style.fontWeight = 'bold';
-    countText.style.fontSize = '15px';
-    countText.style.textAlign = 'center';
-
-    container.appendChild(iconImg);
-    container.appendChild(countText);
-
-    // 創建自定義標記
-    const marker = new CustomMarker(position, map, container);
-    markers.push(marker);
-  });
-
-  console.log(`已在地圖上添加 ${markers.length} 個標記`);
-}
-
 async function initMap(): Promise<void> {
   const { Map } = (await google.maps.importLibrary('maps')) as google.maps.MapsLibrary;
   const { AdvancedMarkerElement } = (await google.maps.importLibrary(
     'marker',
   )) as google.maps.MarkerLibrary;
-
-  infoWindow = new google.maps.InfoWindow();
 
   navigator.geolocation.getCurrentPosition(
     (position: GeolocationPosition) => {
@@ -322,6 +249,8 @@ async function initMap(): Promise<void> {
       console.error('Error getting location:', error.message);
     },
   );
+
+  // No need to return CustomMarker
 }
 
 let authHeader: null = null;
@@ -404,16 +333,86 @@ async function getCombinedData(lat: number, lng: number) {
   }
 }
 
+// 切換租還車
+function toggleCategory() {
+  currentCategory.value = isChecked.value ? 'return' : 'rent';
+  addMarkersToMap(); // 切換模式後重新渲染地圖標記
+}
+
+function toggleImage(category: string) {
+  currentCategory.value = category;
+  addMarkersToMap();
+}
+
+function goToCurrentLocation() {
+  navigator.geolocation.getCurrentPosition((position: GeolocationPosition) => {
+    map.setCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
+  });
+}
+
+// 清除所有地圖標記
+function clearMarkers() {
+  markers.forEach((marker) => marker.setMap(null));
+  markers = [];
+}
+
+// 在地圖上添加標記
+function addMarkersToMap() {
+  clearMarkers();
+
+  filterData.forEach((item) => {
+    const position = new google.maps.LatLng(
+      item.StationPosition?.PositionLat || 0,
+      item.StationPosition?.PositionLon || 0,
+    );
+
+    const isRentMode = currentCategory.value === 'rent';
+    const availableCount = isRentMode ? item.AvailableRentBikes : item.AvailableReturnBikes;
+
+    // 建立容器並添加圖標與文字
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.width = '36px';
+    container.style.height = '50px';
+
+    const iconImg = document.createElement('img');
+    iconImg.src =
+      availableCount > 0 ? (isRentMode ? rentYellowIcon : returnBlackIcon) : zeroGrayIcon;
+    iconImg.style.width = '36px';
+    iconImg.style.height = '50px';
+
+    const countText = document.createElement('div');
+    countText.textContent = availableCount.toString();
+    countText.style.position = 'absolute';
+    countText.style.top = '40%';
+    countText.style.left = '50%';
+    countText.style.transform = 'translate(-50%, -50%)';
+    countText.style.color = availableCount > 0 ? (isRentMode ? 'black' : 'yellow') : 'gray';
+    countText.style.fontWeight = 'bold';
+    countText.style.fontSize = '15px';
+    countText.style.textAlign = 'center';
+
+    container.appendChild(iconImg);
+    container.appendChild(countText);
+
+    // 創建自定義標記
+    const marker = new CustomMarker(position, map, container);
+    markers.push(marker);
+  });
+
+  console.log(`已在地圖上添加 ${markers.length} 個標記`);
+}
+
 onMounted(async () => {
   const loader = new Loader({
     apiKey: runtimeConfig.public.googleMapsApiKey,
     version: 'weekly',
   });
-  const { Autocomplete, PlacesService, Place } = await loader.importLibrary('places');
   try {
-    await initMap();
-  } catch (e) {
-    console.error('Error loading Google Maps API:', e);
+    window.google.maps.Map; // 確保 Google Maps API 已經加載
+    await initMap(); // 然後初始化地圖
+  } catch (error) {
+    console.error('Error loading Google Maps API:', error);
   }
 });
 </script>
