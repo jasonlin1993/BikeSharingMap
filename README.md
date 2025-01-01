@@ -4,6 +4,6 @@
 >
 >
 > - UI / UX:
->   - Amanda(https://www.behance.net/KT_Designer)
+>   - KT (https://www.behance.net/KT_Designer)
 > - F2E
 >   - Jason Lin
