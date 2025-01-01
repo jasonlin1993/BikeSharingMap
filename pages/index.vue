@@ -9,9 +9,9 @@
         >
           微笑單車 暢遊城市
         </p>
-        <MainPageLink to="/findYouBike"> 尋找 Youbike </MainPageLink>
         <MainPageLink to="/findBikeRoad"> 尋找自行車道 </MainPageLink>
         <MainPageLink to="/findAttractionsAndFood"> 附近景點、美食 </MainPageLink>
+        <!-- <MainPageLink to="/findYouBike"> 尋找 Youbike </MainPageLink> -->
       </div>
     </div>
     <p class="absolute bottom-2 right-6 text-xs">
