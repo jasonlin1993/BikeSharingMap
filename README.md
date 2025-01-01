@@ -22,7 +22,7 @@
 ## 使用技術
 
 - Vue
-- TypeScript
+- Typescript
 - Tailwind Css
 - Nuxt.js
 - ESLint：js、ts語法檢查
